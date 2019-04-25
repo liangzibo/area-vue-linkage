@@ -2,13 +2,13 @@
 # area-linkage-vue
 省市区街道四级联动选择. 组合数据来源：[area-data-vue](https://github.com/liangzibo/area-data-vue)
 
-## Installation
-Install the pkg with npm:
+## 安装
+ 使用 npm 安装
 ```
 npm i --save area-linkage-vue area-data-vue
 ```
 
-## Usage
+## 使用
 ```
 import Vue from 'vue';
 import { pcaa } from 'area-data-vue';
@@ -30,7 +30,7 @@ Vue.use(AreaLinkageVue)
 <area-cascader v-model="selected2" :data="$pcaa" :level="2"></area-cascader> // 省市区街道：
 
 ```
-
+更多演示访问 [这里](https://liangzibo.github.io/area-linkage-vue/).
 
 
 ## 属性
