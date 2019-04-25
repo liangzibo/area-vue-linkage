@@ -1,13 +1,13 @@
 <template>
     <div class="code-area">
         <div class="area-left">
-            <area-cascader v-model="selected" :data="$pca"></area-cascader>
+            <area-cascader type="code" v-model="selected" :data="$pcaa"></area-cascader>
         </div>
         <div class="area-right">
             <pre><code>{{selected}}</code></pre>
         </div>
         <div class="original-code" ref="original" v-if="shown">
-            <pre><code><span>//返回值是一个数组，分别是省市的行政区域代码</span><br /><span>&lt;</span>template<span>&gt;</span><br/>&nbsp;&nbsp;&nbsp;&nbsp;<span>&lt;</span>area-cascader&nbsp;v-model='selected'&gt;&lt;/area-cascader&gt;<br/>&lt;</span>/template<span>&gt;</span></code></pre>
+            <pre><code><span>//返回值是一个数组，分别是省市的行政区域代码</span><br /><span>&lt;</span>template<span>&gt;</span><br/>&nbsp;&nbsp;&nbsp;&nbsp;<span>&lt;</span>area-cascader&nbsp;type="text" v-model="selected" :data="$pcaa"&gt;&lt;/area-cascader&gt;<br/>&lt;</span>/template<span>&gt;</span></code></pre>
         </div>
         <div class="show-code" @click="toggle">
             {{this.shown ? 'Hide Code' : 'Show Code'}}

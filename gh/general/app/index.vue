@@ -122,7 +122,7 @@
                 // this.selected = ['440000', '440300', '440305'];
             }, 2000);
         },
- 
+
         components: {
             'v-header': Header,
             'v-footer': Footer,

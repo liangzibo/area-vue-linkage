@@ -1,7 +1,7 @@
 <template>
     <div class="area-cascader-wrap">
         <v-cascader
-            :placeholder="placeholder" 
+            :placeholder="placeholder"
             :options="options"
             :defaultsAreaCodes="defaultsAreaCodes"
             :size="size"
@@ -41,8 +41,8 @@
             },
             level: {
                 type: Number,
-                default: 0, // 0->二联 1->三联
-                validator: (val) => [0, 1].indexOf(val) > -1
+                default: 0, // 0->二联 1->三联 2->四联
+                validator: (val) => [0, 1, 2].indexOf(val) > -1
             },
             size: {
                 type: String,
@@ -65,12 +65,13 @@
 
         data () {
             if (!this.data || !this.data['86']) {
-                throw new Error('[vue-area-linkage]: 需要提供地区数据：https://github.com/dwqs/area-data');
+                throw new Error('[area-linkage-vue]: 需要提供地区数据：https://github.com/liangzibo/area-data-vue');
             }
             return {
                 provinces: this.data['86'],
                 citys: {},
                 areas: {},
+                streets: {},
                 // only array
                 options: [],
 
@@ -80,6 +81,8 @@
                 curCityCode: '',
                 curArea: '',
                 curAreaCode: '',
+                curStreet: '',
+                curStreetCode: '',
 
                 // 设置默认值的判断
                 defaultsAreaCodes: [], // 默认值对应的 code
@@ -102,9 +105,9 @@
             },
 
             curProvinceCode (val) {
+
                 this.curProvince = this.provinces[val];
                 this.citys = this.data[val];
-
                 if (!this.citys) {
                     this.citys = {
                         [this.curProvinceCode]: this.curProvince
@@ -134,10 +137,11 @@
             },
 
             curCityCode (val) {
+
                 this.curCity = this.citys[val];
                 if (this.level === 0) {
                     this.setDefaultsCodes();
-                } else if (this.level === 1) {
+                } else if (this.level >= 1) {
                     this.areas = this.data[val];
                     if (!this.areas) {
                         this.areas = {
@@ -169,8 +173,44 @@
             },
 
             curAreaCode (val) {
+
                 this.curArea = this.areas[val];
-                this.curAreaCode = val;
+                if (this.level === 1) {
+                    this.setDefaultsCodes();
+                } else if (this.level >= 2) {
+                    this.streets = this.data[val];
+                    if (!this.streets) {
+                        this.streets = {
+                            [this.curAreaCode]: this.curArea
+                        };
+                        this.curStreet = this.curArea;
+                        this.curStreetCode = this.curAreaCode;
+                        return;
+                    }
+
+                    let curStreet = Object.values(this.streets)[0];
+                    let curStreetCode = Object.keys(this.streets)[0];
+
+                    if (this.defaults[3]) {
+                        if (this.isCode) {
+                            curStreetCode = find(Object.keys(this.streets), (item) => item === this.defaults[3]);
+                            assert(curStreetCode, `街道 ${this.defaults[3]} 不存在于县区 ${this.defaults[2]} 中`);
+                            curStreet = this.streets[curStreetCode];
+                        } else {
+                            curStreet = find(this.streets, (item) => item === this.defaults[3]);
+                            assert(curStreet, `街道 ${this.defaults[3]} 不存在于县区 ${this.defaults[2]} 中`);
+                            curStreetCode = find(Object.keys(this.streets), (item) => this.streets[item] === this.defaults[3]);
+                        }
+                    }
+
+                    this.curStreet = curStreet;
+                    this.curStreetCode = curStreetCode;
+                }
+            },
+            curStreetCode (val) {
+
+                this.curStreet = this.streets[val];
+                this.curStreetCode = val;
                 this.setDefaultsCodes();
             }
         },
@@ -178,7 +218,7 @@
         methods: {
             beforeSetDefault () {
                 const chinese = /^[\u4E00-\u9FA5\uF900-\uFA2D]{2,}$/;
-                const num = /^\d{6,}$/;
+                const num = /^\d{6,}$/ || /^\d{9,}$/;
                 const isCode = num.test(this.value[0]);
                 let isValid;
 
@@ -219,10 +259,29 @@
                     // this.emitter.emit('set-def-values', codes, labels);
                 }
                 this.isSetDefault = true;
-
-                if (labels[0] === labels[1]) {
-                    // 纠正台湾省的 code 返回
-                    codes[1] = codes[0];
+                if (codes[0] === '820000') {
+                    if(this.level == '2') {
+                        codes[2] = '0';
+                        codes[3] = '0';
+                    } else if (this.level == '1') {
+                        codes[2] = '0';
+                    }
+                } else if (codes[0] === '810000' || codes[0] === '710000') {
+                    if(this.level == '2') {
+                        codes[3] = '0';
+                    }
+                }
+                if (labels[0] === '澳门') {
+                    if(this.level == '2') {
+                        labels[2] = '';
+                        labels[3] = '';
+                    } else if (this.level == '1') {
+                        labels[2] = '';
+                    }
+                } else if (labels[0] === '台湾' || labels[0] === '香港') {
+                    if(this.level == '2') {
+                        labels[3] = '';
+                    }
                 }
 
                 if (this.type === 'code') {
@@ -256,32 +315,31 @@
             iterateCities () {
                 const temp = [];
                 const provinces = this.iterate(this.data['86'], 0);
-
                 for (let i = 0, l = provinces.length; i < l; i++) {
                     const item = {};
                     item['label'] = provinces[i].label;
                     item['value'] = provinces[i].value;
                     item['panelIndex'] = provinces[i].panelIndex;
-
                     item['children'] = this.iterate(this.data[provinces[i].value], 1);
                     temp.push(item);
                 }
-
                 return temp;
             },
 
             iterateAreas () {
                 const temp = [];
                 const cities = this.iterateCities();
-
                 for (let i = 0, c = cities.length; i < c; i++) {
                     const city = cities[i];
                     for (let j = 0, l = city.children.length; j < l; j++) {
-                        const item = city.children[j];
-                        const areas = this.iterate(this.data[city.children[j].value], 2);
-                        // fix #7
-                        if (areas.length) {
-                            item['children'] = areas;
+                        const item = {};
+                        item['label'] = city.children[j].label;
+                        item['value'] = city.children[j].value;
+                        item['panelIndex'] = city.children[j].panelIndex;
+                        // item['children'] = this.iterate(this.data[city.children[j].value], 2);
+                        const areaNew = this.iterate(this.data[city.children[j].value], 2);
+                        if (areaNew.length) {
+                            item['children'] = areaNew;
                         } else {
                             item['children'] = [{
                                 label: item.label,
@@ -289,12 +347,44 @@
                                 panelIndex: 2
                             }];
                         }
+                        city.children[j] = item
                     }
                     temp.push(city);
                 }
                 return temp;
             },
+            iterateStreet() {
+                const temp = [];
+                const areaNow = this.iterateAreas();
+                for (let i = 0, c = areaNow.length; i < c; i++) {
+                    const areaNext = areaNow[i];
+                    for (let j = 0, l = areaNext.children.length; j < l; j++) {
+                        const areaNew = areaNext.children[j];
+                        for(let k = 0, m = areaNew.children.length; k < m; k++) {
+                            const areaLast = areaNew.children[k];
+                            const streetNew = this.iterate(this.data[areaLast.value], 3);
+                            const item = {};
+                            item['label'] = areaLast.label;
+                            item['value'] = areaLast.value;
+                            item['panelIndex'] = areaLast.panelIndex;
+                            // item['children'] = this.iterate(this.data[areaLast.value], 3);
+                            if (streetNew.length) {
+                                item['children'] = streetNew;
+                            } else {
+                                item['children'] = [{
+                                    label: item.label,
+                                    value: item.value,
+                                    panelIndex: 3
+                                }];
+                            }
+                            areaNew.children[k] = item
+                        }
 
+                    }
+                    temp.push(areaNext);
+                }
+                return temp;
+            },
             setDefaultsCodes () {
                 if (this.isSetDefault) {
                     return;
@@ -309,6 +399,9 @@
                     case 1:
                         codes = [this.curProvinceCode, this.curCityCode, this.curAreaCode];
                         break;
+                    case 2:
+                        codes = [this.curProvinceCode, this.curCityCode, this.curAreaCode, this.curStreetCode];
+                        break;
                 }
                 this.defaultsAreaCodes = [].concat(codes);
             }
@@ -319,8 +412,10 @@
                 this.options = this.iterateCities();
             } else if (this.level === 1) {
                 this.options = this.iterateAreas();
+            } else if (this.level === 2) {
+                this.options = this.iterateStreet();
             } else {
-                assert(false, `设置的 level 值只支持 0/1`);
+                assert(false, `设置的 level 值只支持 0/1/2`);
             }
 
             if (isArray(this.value) && this.value.length === this.level + 2) {

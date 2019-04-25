@@ -1,5 +1,5 @@
 {
-  "name": "vue-area-linkage",
+  "name": "area-linkage-vue",
   "version": "5.1.0",
   "description": "Vue area linkage",
   "author": "pomysky@gmail.com",
@@ -8,7 +8,7 @@
   "private": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/dwqs/vue-area-linkage.git"
+    "url": "https://github.com/liangzibo/area-linkage-vue.git"
   },
   "bugs": {
     "url": "https://github.com/dwqs/vue-area-linkage/issues"
@@ -41,10 +41,11 @@
   },
   "peerDependencies": {
     "vue": ">=2.2.0",
+    "area-data-vue": ">=1.0.5",
     "area-data": ">=5.0.6"
   },
   "devDependencies": {
-    "area-data": "^5.0.6",
+    "area-data-vue": "^1.0.6",
     "autoprefixer": "^7.1.1",
     "babel-core": "^6.25.0",
     "babel-eslint": "^7.2.3",

@@ -440,9 +440,9 @@ function assert(condition) {
     var msg = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
     if (!condition) {
-        // throw new Error(`[vue-area-linkage]: ${msg}`);
+        // throw new Error(`[area-linkage-vue]: ${msg}`);
         // fix #27
-        console.error('[vue-area-linkage]: ' + msg);
+        console.error('[area-linkage-vue]: ' + msg);
     }
 }
 
@@ -3826,7 +3826,7 @@ var option_Component = option_normalizeComponent(
 
     data: function data() {
         if (!this.data || !this.data['86']) {
-            throw new Error('[vue-area-linkage]: 需要提供地区数据，格式参考见：https://github.com/dwqs/area-data');
+            throw new Error('[area-linkage-vue]: 需要提供地区数据，格式参考见：https://github.com/liangzibo/area-data-vue');
         }
 
         return {

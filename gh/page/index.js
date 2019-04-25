@@ -1,13 +1,11 @@
 import './reset.css';
 
 import Vue from 'vue';
-import { pca, pcaa } from 'area-data';
-import VueAreaLinkage from '../../src/index.js';
-
-Vue.prototype.$pca = pca;
+import { pcaa } from 'area-data-vue';
+import AreaLinkageVue from '../../src/index.js';
 Vue.prototype.$pcaa = pcaa;
 
-Vue.use(VueAreaLinkage);
+Vue.use(AreaLinkageVue);
 
 const env = process.env.NODE_ENV || 'development';
 

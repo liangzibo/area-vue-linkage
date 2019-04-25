@@ -1,30 +1,40 @@
 <template>
     <div class="area-select-wrap">
         <v-select v-model="curProvinceCode" :placeholder="placeholders[0] ? placeholders[0] : '请选择'" :size="size" :disabled="disabled">
-            <v-option v-for="(val, key) in provinces" 
-                :key="key" 
-                :label="val" 
+            <v-option v-for="(val, key) in provinces"
+                :key="key"
+                :label="val"
                 :value="key">
             </v-option>
         </v-select>
 
          <v-select v-model="curCityCode" :placeholder="placeholders[1] ? placeholders[1] : '请选择'" v-if="level>=1" :size="size" :disabled="disabled">
-            <p v-if="!Object.keys(citys).length" class="area-select-empty">暂无数据</p> 
-            <v-option v-else v-for="(val, key) in citys" 
-                :key="key" 
-                :label="val" 
+            <p v-if="!Object.keys(citys).length" class="area-select-empty">暂无数据</p>
+            <v-option v-else v-for="(val, key) in citys"
+                :key="key"
+                :label="val"
                 :value="key">
             </v-option>
         </v-select>
 
         <v-select v-model="curAreaCode" :placeholder="placeholders[2] ? placeholders[2] : '请选择'" v-if="level>=2" :size="size" :disabled="disabled">
-            <p v-if="!Object.keys(areas).length" class="area-select-empty">暂无数据</p> 
-            <v-option v-else v-for="(val, key) in areas" 
-                :key="key" 
-                :label="val" 
+            <p v-if="!Object.keys(areas).length" class="area-select-empty">暂无数据</p>
+            <v-option v-else v-for="(val, key) in areas"
+                :key="key"
+                :label="val"
                 :value="key">
             </v-option>
         </v-select>
+
+        <v-select v-model="curStreetCode" :placeholder="placeholders[3] ? placeholders[3] : '请选择'" v-if="level>=3" :size="size" :disabled="disabled">
+            <p v-if="!Object.keys(streets).length" class="area-select-empty">暂无数据</p>
+            <v-option v-else v-for="(val, key) in streets"
+                      :key="key"
+                      :label="val"
+                      :value="key">
+            </v-option>
+        </v-select>
+
     </div>
 </template>
 
@@ -58,8 +68,8 @@
             },
             level: {
                 type: Number,
-                default: 1, // 0-->一联 1->二联 2->三联
-                validator: (val) => [0, 1, 2].indexOf(val) > -1
+                default: 1, // 0-->一联 1->二联 2->三联 3->四联
+                validator: (val) => [0, 1, 2, 3].indexOf(val) > -1
             },
             size: {
                 type: String,
@@ -83,7 +93,7 @@
 
         data () {
             if (!this.data || !this.data['86']) {
-                throw new Error('[vue-area-linkage]: 需要提供地区数据，格式参考见：https://github.com/dwqs/area-data');
+                throw new Error('[area-linkage-vue]: 需要提供地区数据，格式参考见：https://github.com/liangzibo/area-data-vue');
             }
 
             return {
@@ -91,18 +101,20 @@
                 provinces: this.data['86'],
                 citys: {},
                 areas: {},
-
+                streets: {},
                 curProvince: '', // text
                 curProvinceCode: '', // code
                 curCity: '',
                 curCityCode: '',
                 curArea: '',
                 curAreaCode: '',
+                curStreet: '',
+                curStreetCode: '',
 
                 // 设置默认值的判断
                 defaults: [],
                 isCode: false,
-                isSetDefault: false
+                isSetDefault: true
             };
         },
 
@@ -116,12 +128,15 @@
                 this.curCity = this.citys[val];
                 this.cityChange(val, oldVal === val);
             },
-    
+
             curAreaCode (val, oldVal) {
                 this.curArea = this.areas[val];
                 this.areaChange(val, oldVal === val);
             },
-
+            curStreetCode (val, oldVal) {
+                this.curStreet = this.streets[val];
+                this.streetChange(val, oldVal === val);
+            },
             value (val) {
                 if (!this.isSetDefault && isArray(val) && val.length === this.level + 1) {
                     this.beforeSetDefault();
@@ -148,12 +163,10 @@
                             this.curCity = this.curProvince;
                             this.curCityCode = this.curCityCode;
                         }
-                        return;
+                        // return;
                     }
-
                     let curCity = Object.values(this.citys)[0];
                     let curCityCode = Object.keys(this.citys)[0];
-
                     if (this.defaults[1]) {
                         if (this.isCode) {
                             curCityCode = find(Object.keys(this.citys), (item) => item === this.defaults[1]);
@@ -174,6 +187,8 @@
                         this.curCityCode = '';
                         this.curArea = '';
                         this.curAreaCode = '';
+                        this.curStreet = '';
+                        this.curStreetCode = '';
                         this.selectChange();
                     }
                 }
@@ -182,7 +197,7 @@
             cityChange (val, isEqual) {
                 if (this.level === 1) {
                     this.selectChange();
-                } else if (this.level === 2) {
+                } else if (this.level >= 2) {
                     this.areas = this.data[val];
                     if (!this.areas) {
                         // fix 市级下不存在城区(#7)
@@ -193,7 +208,7 @@
                             this.curArea = this.curCity;
                             this.curAreaCode = this.curCityCode;
                         }
-                        return;
+                        // return;
                     }
 
                     let curArea = Object.values(this.areas)[0];
@@ -217,16 +232,68 @@
                     } else if (!isEqual) {
                         this.curArea = '';
                         this.curAreaCode = '';
+                        this.curStreet = '';
+                        this.curStreetCode = '';
                         this.selectChange();
                     }
                 }
             },
 
-            areaChange (val) {
-                this.curAreaCode = val;
+            areaChange (val, isEqual) {
+                if (this.level === 2) {
+                    this.selectChange();
+                } else if (this.level === 3) {
+                    this.streets = this.data[val];
+                    // if(!this.streets) {
+                    //     this.streets = {
+                    //         [this.curAreaCode]: this.curArea
+                    //     };
+                    //     if (!this.disableLinkage) {
+                    //         this.curStreet = this.curStreet;
+                    //         this.curStreetCode = this.curStreetCode;
+                    //     }
+                    // }
+                    if (!this.streets) {
+                        // fix 县区级下不存在街道(#7)
+                        this.streets = {
+                            [this.curAreaCode]: this.curArea
+                        };
+                        if (!this.disableLinkage) {
+                            this.curStreet = this.curStreet;
+                            this.curStreetCode = this.curStreetCode;
+                        }
+                        // return;
+                    }
+
+                    let curStreet = Object.values(this.streets)[0];
+                    let curStreetCode = Object.keys(this.streets)[0];
+
+                    if (this.defaults[3]) {
+                        if (this.isCode) {
+                            curStreetCode = find(Object.keys(this.streets), (item) => item === this.defaults[3]);
+                            assert(curStreetCode, `街道 ${this.defaults[2]} 不存在于县区 ${this.defaults[2]} 中`);
+                            curStreet = this.streets[curStreetCode];
+                        } else {
+                            curStreet = find(this.streets, (item) => item === this.defaults[3]);
+                            assert(curStreet, `街道 ${this.defaults[2]} 不存在于县区 ${this.defaults[2]} 中`);
+                            curStreetCode = find(Object.keys(this.streets), (item) => this.streets[item] === this.defaults[3]);
+                        }
+                    }
+
+                    if (!this.disableLinkage) {
+                        this.curStreet = curStreet;
+                        this.curStreetCode = curStreetCode;
+                    } else if (!isEqual) {
+                        this.curStreet = '';
+                        this.curStreetCode = '';
+                        this.selectChange();
+                    }
+                }
+            },
+            streetChange (val) {
+                this.curStreetCode = val;
                 this.selectChange();
             },
-
             getAreaCode () {
                 let codes = [];
 
@@ -239,10 +306,23 @@
                         break;
                     case 2:
                         // fix #32 710000是台湾省
-                        codes = [this.curProvinceCode, this.curProvinceCode === '710000' ? this.curProvinceCode : this.curCityCode, this.curAreaCode];
+                        if (this.curProvinceCode == '820000') {
+                            codes = [this.curProvinceCode, this.curCityCode, '0'];
+                        } else {
+                            codes = [this.curProvinceCode, this.curCityCode, this.curAreaCode];
+                        }
+                        break;
+                    case 3:
+                        // fix #32 710000是台湾省
+                        if (this.curProvinceCode == '820000') {
+                            codes = [this.curProvinceCode, this.curCityCode, '0', '0'];
+                        } else if(this.curProvinceCode == '810000' || this.curProvinceCode == '710000' ) {
+                            codes = [this.curProvinceCode, this.curCityCode, this.curAreaCode, '0'];
+                        }else {
+                            codes = [this.curProvinceCode, this.curCityCode, this.curAreaCode, this.curStreetCode];
+                        }
                         break;
                 }
-
                 return codes;
             },
 
@@ -255,13 +335,26 @@
                         break;
                     case 1:
                         // fix #32 710000是台湾省
-                        texts = [this.curProvince, this.curProvinceCode === '710000' ? this.curProvince : this.curCity];
+                        texts = [this.curProvince, this.curCity];
                         break;
                     case 2:
-                        texts = [this.curProvince, this.curProvinceCode === '710000' ? this.curProvince : this.curCity, this.curArea];
+                        if (this.curProvince == '澳门') {
+                            texts = [this.curProvince, this.curCity, ''];
+                        } else {
+                            texts = [this.curProvince, this.curCity, this.curArea];
+                        }
+                        break;
+                    case 3:
+                        if (this.curProvince == '澳门') {
+                            texts = [this.curProvince, this.curCity, '', ''];
+                        } else if(this.curProvince == '香港' || this.curProvince == '台湾' ) {
+                            texts = [this.curProvince, this.curCity, this.curArea, ''];
+                        } else {
+                            texts = [this.curProvince, this.curCity, this.curArea, this.curStreet];
+                        }
+
                         break;
                 }
-
                 return texts;
             },
 
@@ -273,13 +366,14 @@
                         textCodes = [{ [this.curProvinceCode]: this.curProvince }];
                         break;
                     case 1:
-                        
+
                         textCodes = [{ [this.curProvinceCode]: this.curProvince }, { [this.curCityCode]: this.curCity }];
                         break;
                     case 2:
-                        const cityCode = this.curProvinceCode === '710000' ? this.curProvinceCode : this.curCityCode;
-                        const cityText = this.curProvinceCode === '710000' ? this.curProvince : this.curCity;
-                        textCodes = [{ [this.curProvinceCode]: this.curProvince }, { [cityCode]: cityText }, { [this.curAreaCode]: this.curArea }];
+                        textCodes = [{ [this.curProvinceCode]: this.curProvince }, { [this.curCityCode]: this.curCity }, { [this.curAreaCode]: this.curArea }];
+                        break;
+                    case 3:
+                        textCodes = [{ [this.curProvinceCode]: this.curProvince }, { [this.curCityCode]: this.curCity }, { [this.curAreaCode]: this.curArea }, { [this.curStreetCode]: this.curStreet }];
                         break;
                 }
 
@@ -327,7 +421,6 @@
             selectChange () {
                 this.isSetDefault = true;
                 let res = [];
-
                 if (this.type === 'code') {
                     res = this.getAreaCode();
                 } else if (this.type === 'text') {
