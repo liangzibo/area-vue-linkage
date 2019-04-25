@@ -1,6 +1,6 @@
 ![npm-version](https://img.shields.io/npm/v/vue-area-linkage.svg) ![license](https://img.shields.io/npm/l/vue-area-linkage.svg)
 # area-linkage-vue
-省市区联动选择. 组合数据来源：[area-data-vue](https://github.com/liangzibo/area-data-vue)
+省市区街道四级联动选择. 组合数据来源：[area-data-vue](https://github.com/liangzibo/area-data-vue)
 
 ## Installation
 Install the pkg with npm:
