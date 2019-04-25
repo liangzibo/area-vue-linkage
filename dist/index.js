@@ -68,7 +68,7 @@ module.exports =
 /* 0 */
 /***/ (function(module, exports) {
 
-var core = module.exports = { version: '2.5.7' };
+var core = module.exports = { version: '2.6.5' };
 if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
 
 
@@ -513,7 +513,7 @@ var store = global[SHARED] || (global[SHARED] = {});
 })('versions', []).push({
   version: core.version,
   mode: __webpack_require__(25) ? 'pure' : 'global',
-  copyright: '© 2018 Denis Pushkarev (zloirock.ru)'
+  copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
 });
 
 
@@ -3662,6 +3662,16 @@ if (false) {(function () {
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -3696,9 +3706,9 @@ if (false) {(function () {
         },
         level: {
             type: Number,
-            default: 1, // 0-->一联 1->二联 2->三联
+            default: 1, // 0-->一联 1->二联 2->三联 3->四联
             validator: function validator(val) {
-                return [0, 1, 2].indexOf(val) > -1;
+                return [0, 1, 2, 3].indexOf(val) > -1;
             }
         },
         size: {
@@ -3733,18 +3743,20 @@ if (false) {(function () {
             provinces: this.data['86'],
             citys: {},
             areas: {},
-
+            streets: {},
             curProvince: '', // text
             curProvinceCode: '', // code
             curCity: '',
             curCityCode: '',
             curArea: '',
             curAreaCode: '',
+            curStreet: '',
+            curStreetCode: '',
 
             // 设置默认值的判断
             defaults: [],
             isCode: false,
-            isSetDefault: false
+            isSetDefault: true
         };
     },
 
@@ -3761,6 +3773,10 @@ if (false) {(function () {
         curAreaCode: function curAreaCode(val, oldVal) {
             this.curArea = this.areas[val];
             this.areaChange(val, oldVal === val);
+        },
+        curStreetCode: function curStreetCode(val, oldVal) {
+            this.curStreet = this.streets[val];
+            this.streetChange(val, oldVal === val);
         },
         value: function value(val) {
             if (!this.isSetDefault && isArray(val) && val.length === this.level + 1) {
@@ -3788,12 +3804,10 @@ if (false) {(function () {
                         this.curCity = this.curProvince;
                         this.curCityCode = this.curCityCode;
                     }
-                    return;
+                    // return;
                 }
-
                 var curCity = values_default()(this.citys)[0];
                 var curCityCode = keys_default()(this.citys)[0];
-
                 if (this.defaults[1]) {
                     if (this.isCode) {
                         curCityCode = lodash_find_default()(keys_default()(this.citys), function (item) {
@@ -3820,6 +3834,8 @@ if (false) {(function () {
                     this.curCityCode = '';
                     this.curArea = '';
                     this.curAreaCode = '';
+                    this.curStreet = '';
+                    this.curStreetCode = '';
                     this.selectChange();
                 }
             }
@@ -3829,7 +3845,7 @@ if (false) {(function () {
 
             if (this.level === 1) {
                 this.selectChange();
-            } else if (this.level === 2) {
+            } else if (this.level >= 2) {
                 this.areas = this.data[val];
                 if (!this.areas) {
                     // fix 市级下不存在城区(#7)
@@ -3838,7 +3854,7 @@ if (false) {(function () {
                         this.curArea = this.curCity;
                         this.curAreaCode = this.curCityCode;
                     }
-                    return;
+                    // return;
                 }
 
                 var curArea = values_default()(this.areas)[0];
@@ -3868,12 +3884,71 @@ if (false) {(function () {
                 } else if (!isEqual) {
                     this.curArea = '';
                     this.curAreaCode = '';
+                    this.curStreet = '';
+                    this.curStreetCode = '';
                     this.selectChange();
                 }
             }
         },
-        areaChange: function areaChange(val) {
-            this.curAreaCode = val;
+        areaChange: function areaChange(val, isEqual) {
+            var _this3 = this;
+
+            if (this.level === 2) {
+                this.selectChange();
+            } else if (this.level === 3) {
+                this.streets = this.data[val];
+                // if(!this.streets) {
+                //     this.streets = {
+                //         [this.curAreaCode]: this.curArea
+                //     };
+                //     if (!this.disableLinkage) {
+                //         this.curStreet = this.curStreet;
+                //         this.curStreetCode = this.curStreetCode;
+                //     }
+                // }
+                if (!this.streets) {
+                    // fix 县区级下不存在街道(#7)
+                    this.streets = defineProperty_default()({}, this.curAreaCode, this.curArea);
+                    if (!this.disableLinkage) {
+                        this.curStreet = this.curStreet;
+                        this.curStreetCode = this.curStreetCode;
+                    }
+                    // return;
+                }
+
+                var curStreet = values_default()(this.streets)[0];
+                var curStreetCode = keys_default()(this.streets)[0];
+
+                if (this.defaults[3]) {
+                    if (this.isCode) {
+                        curStreetCode = lodash_find_default()(keys_default()(this.streets), function (item) {
+                            return item === _this3.defaults[3];
+                        });
+                        assert(curStreetCode, '\u8857\u9053 ' + this.defaults[2] + ' \u4E0D\u5B58\u5728\u4E8E\u53BF\u533A ' + this.defaults[2] + ' \u4E2D');
+                        curStreet = this.streets[curStreetCode];
+                    } else {
+                        curStreet = lodash_find_default()(this.streets, function (item) {
+                            return item === _this3.defaults[3];
+                        });
+                        assert(curStreet, '\u8857\u9053 ' + this.defaults[2] + ' \u4E0D\u5B58\u5728\u4E8E\u53BF\u533A ' + this.defaults[2] + ' \u4E2D');
+                        curStreetCode = lodash_find_default()(keys_default()(this.streets), function (item) {
+                            return _this3.streets[item] === _this3.defaults[3];
+                        });
+                    }
+                }
+
+                if (!this.disableLinkage) {
+                    this.curStreet = curStreet;
+                    this.curStreetCode = curStreetCode;
+                } else if (!isEqual) {
+                    this.curStreet = '';
+                    this.curStreetCode = '';
+                    this.selectChange();
+                }
+            }
+        },
+        streetChange: function streetChange(val) {
+            this.curStreetCode = val;
             this.selectChange();
         },
         getAreaCode: function getAreaCode() {
@@ -3888,10 +3963,23 @@ if (false) {(function () {
                     break;
                 case 2:
                     // fix #32 710000是台湾省
-                    codes = [this.curProvinceCode, this.curProvinceCode === '710000' ? this.curProvinceCode : this.curCityCode, this.curAreaCode];
+                    if (this.curProvinceCode == '820000') {
+                        codes = [this.curProvinceCode, this.curCityCode, '0'];
+                    } else {
+                        codes = [this.curProvinceCode, this.curCityCode, this.curAreaCode];
+                    }
+                    break;
+                case 3:
+                    // fix #32 710000是台湾省
+                    if (this.curProvinceCode == '820000') {
+                        codes = [this.curProvinceCode, this.curCityCode, '0', '0'];
+                    } else if (this.curProvinceCode == '810000' || this.curProvinceCode == '710000') {
+                        codes = [this.curProvinceCode, this.curCityCode, this.curAreaCode, '0'];
+                    } else {
+                        codes = [this.curProvinceCode, this.curCityCode, this.curAreaCode, this.curStreetCode];
+                    }
                     break;
             }
-
             return codes;
         },
         getAreaText: function getAreaText() {
@@ -3903,13 +3991,26 @@ if (false) {(function () {
                     break;
                 case 1:
                     // fix #32 710000是台湾省
-                    texts = [this.curProvince, this.curProvinceCode === '710000' ? this.curProvince : this.curCity];
+                    texts = [this.curProvince, this.curCity];
                     break;
                 case 2:
-                    texts = [this.curProvince, this.curProvinceCode === '710000' ? this.curProvince : this.curCity, this.curArea];
+                    if (this.curProvince == '澳门') {
+                        texts = [this.curProvince, this.curCity, ''];
+                    } else {
+                        texts = [this.curProvince, this.curCity, this.curArea];
+                    }
+                    break;
+                case 3:
+                    if (this.curProvince == '澳门') {
+                        texts = [this.curProvince, this.curCity, '', ''];
+                    } else if (this.curProvince == '香港' || this.curProvince == '台湾') {
+                        texts = [this.curProvince, this.curCity, this.curArea, ''];
+                    } else {
+                        texts = [this.curProvince, this.curCity, this.curArea, this.curStreet];
+                    }
+
                     break;
             }
-
             return texts;
         },
         getAreaCodeAndText: function getAreaCodeAndText(selected) {
@@ -3924,9 +4025,10 @@ if (false) {(function () {
                     textCodes = [defineProperty_default()({}, this.curProvinceCode, this.curProvince), defineProperty_default()({}, this.curCityCode, this.curCity)];
                     break;
                 case 2:
-                    var cityCode = this.curProvinceCode === '710000' ? this.curProvinceCode : this.curCityCode;
-                    var cityText = this.curProvinceCode === '710000' ? this.curProvince : this.curCity;
-                    textCodes = [defineProperty_default()({}, this.curProvinceCode, this.curProvince), defineProperty_default()({}, cityCode, cityText), defineProperty_default()({}, this.curAreaCode, this.curArea)];
+                    textCodes = [defineProperty_default()({}, this.curProvinceCode, this.curProvince), defineProperty_default()({}, this.curCityCode, this.curCity), defineProperty_default()({}, this.curAreaCode, this.curArea)];
+                    break;
+                case 3:
+                    textCodes = [defineProperty_default()({}, this.curProvinceCode, this.curProvince), defineProperty_default()({}, this.curCityCode, this.curCity), defineProperty_default()({}, this.curAreaCode, this.curArea), defineProperty_default()({}, this.curStreetCode, this.curStreet)];
                     break;
             }
 
@@ -3955,7 +4057,7 @@ if (false) {(function () {
             this.isSetDefault = true;
         },
         setDefaultValue: function setDefaultValue() {
-            var _this3 = this;
+            var _this4 = this;
 
             var provinceCode = '';
 
@@ -3963,25 +4065,24 @@ if (false) {(function () {
                 provinceCode = this.defaults[0];
             } else {
                 var province = lodash_find_default()(this.provinces, function (item) {
-                    return item === _this3.defaults[0];
+                    return item === _this4.defaults[0];
                 });
                 assert(province, '\u7701\u4EFD ' + this.defaults[0] + ' \u4E0D\u5B58\u5728');
                 provinceCode = lodash_find_default()(keys_default()(this.provinces), function (item) {
-                    return _this3.provinces[item] === _this3.defaults[0];
+                    return _this4.provinces[item] === _this4.defaults[0];
                 });
             }
             this.curProvinceCode = provinceCode;
             // 还原默认值，避免用户选择出错
             this.$nextTick(function () {
-                _this3.defaults = [];
+                _this4.defaults = [];
                 // this.isCode = false;
-                _this3.isSetDefault = false;
+                _this4.isSetDefault = false;
             });
         },
         selectChange: function selectChange() {
             this.isSetDefault = true;
             var res = [];
-
             if (this.type === 'code') {
                 res = this.getAreaCode();
             } else if (this.type === 'text') {
@@ -4032,7 +4133,8 @@ var area_select_render = function() {
         },
         _vm._l(_vm.provinces, function(val, key) {
           return _c("v-option", { key: key, attrs: { label: val, value: key } })
-        })
+        }),
+        1
       ),
       _vm._v(" "),
       _vm.level >= 1
@@ -4095,6 +4197,41 @@ var area_select_render = function() {
                     _vm._v("暂无数据")
                   ])
                 : _vm._l(_vm.areas, function(val, key) {
+                    return _c("v-option", {
+                      key: key,
+                      attrs: { label: val, value: key }
+                    })
+                  })
+            ],
+            2
+          )
+        : _vm._e(),
+      _vm._v(" "),
+      _vm.level >= 3
+        ? _c(
+            "v-select",
+            {
+              attrs: {
+                placeholder: _vm.placeholders[3]
+                  ? _vm.placeholders[3]
+                  : "请选择",
+                size: _vm.size,
+                disabled: _vm.disabled
+              },
+              model: {
+                value: _vm.curStreetCode,
+                callback: function($$v) {
+                  _vm.curStreetCode = $$v
+                },
+                expression: "curStreetCode"
+              }
+            },
+            [
+              !Object.keys(_vm.streets).length
+                ? _c("p", { staticClass: "area-select-empty" }, [
+                    _vm._v("暂无数据")
+                  ])
+                : _vm._l(_vm.streets, function(val, key) {
                     return _c("v-option", {
                       key: key,
                       attrs: { label: val, value: key }
@@ -4377,13 +4514,14 @@ var caspanel_render = function() {
               on: {
                 click: function($event) {
                   $event.stopPropagation()
-                  _vm.handleClickItem(item)
+                  return _vm.handleClickItem(item)
                 }
               }
             },
             [_vm._v("\n            " + _vm._s(item.label) + "\n        ")]
           )
-        })
+        }),
+        0
       ),
       _vm._v(" "),
       _vm.sublist && _vm.sublist.length
@@ -4859,9 +4997,9 @@ if (false) {(function () {
         },
         level: {
             type: Number,
-            default: 0, // 0->二联 1->三联
+            default: 0, // 0->二联 1->三联 2->四联
             validator: function validator(val) {
-                return [0, 1].indexOf(val) > -1;
+                return [0, 1, 2].indexOf(val) > -1;
             }
         },
         size: {
@@ -4893,6 +5031,7 @@ if (false) {(function () {
             provinces: this.data['86'],
             citys: {},
             areas: {},
+            streets: {},
             // only array
             options: [],
 
@@ -4902,6 +5041,8 @@ if (false) {(function () {
             curCityCode: '',
             curArea: '',
             curAreaCode: '',
+            curStreet: '',
+            curStreetCode: '',
 
             // 设置默认值的判断
             defaultsAreaCodes: [], // 默认值对应的 code
@@ -4928,7 +5069,6 @@ if (false) {(function () {
 
             this.curProvince = this.provinces[val];
             this.citys = this.data[val];
-
             if (!this.citys) {
                 this.citys = defineProperty_default()({}, this.curProvinceCode, this.curProvince);
                 this.curCity = this.curProvince;
@@ -4966,7 +5106,7 @@ if (false) {(function () {
             this.curCity = this.citys[val];
             if (this.level === 0) {
                 this.setDefaultsCodes();
-            } else if (this.level === 1) {
+            } else if (this.level >= 1) {
                 this.areas = this.data[val];
                 if (!this.areas) {
                     this.areas = defineProperty_default()({}, this.curCityCode, this.curCity);
@@ -5001,8 +5141,49 @@ if (false) {(function () {
             }
         },
         curAreaCode: function curAreaCode(val) {
+            var _this3 = this;
+
             this.curArea = this.areas[val];
-            this.curAreaCode = val;
+            if (this.level === 1) {
+                this.setDefaultsCodes();
+            } else if (this.level >= 2) {
+                this.streets = this.data[val];
+                if (!this.streets) {
+                    this.streets = defineProperty_default()({}, this.curAreaCode, this.curArea);
+                    this.curStreet = this.curArea;
+                    this.curStreetCode = this.curAreaCode;
+                    return;
+                }
+
+                var curStreet = values_default()(this.streets)[0];
+                var curStreetCode = keys_default()(this.streets)[0];
+
+                if (this.defaults[3]) {
+                    if (this.isCode) {
+                        curStreetCode = lodash_find_default()(keys_default()(this.streets), function (item) {
+                            return item === _this3.defaults[3];
+                        });
+                        assert(curStreetCode, '\u8857\u9053 ' + this.defaults[3] + ' \u4E0D\u5B58\u5728\u4E8E\u53BF\u533A ' + this.defaults[2] + ' \u4E2D');
+                        curStreet = this.streets[curStreetCode];
+                    } else {
+                        curStreet = lodash_find_default()(this.streets, function (item) {
+                            return item === _this3.defaults[3];
+                        });
+                        assert(curStreet, '\u8857\u9053 ' + this.defaults[3] + ' \u4E0D\u5B58\u5728\u4E8E\u53BF\u533A ' + this.defaults[2] + ' \u4E2D');
+                        curStreetCode = lodash_find_default()(keys_default()(this.streets), function (item) {
+                            return _this3.streets[item] === _this3.defaults[3];
+                        });
+                    }
+                }
+
+                this.curStreet = curStreet;
+                this.curStreetCode = curStreetCode;
+            }
+        },
+        curStreetCode: function curStreetCode(val) {
+
+            this.curStreet = this.streets[val];
+            this.curStreetCode = val;
             this.setDefaultsCodes();
         }
     },
@@ -5010,7 +5191,7 @@ if (false) {(function () {
     methods: {
         beforeSetDefault: function beforeSetDefault() {
             var chinese = /^[\u4E00-\u9FA5\uF900-\uFA2D]{2,}$/;
-            var num = /^\d{6,}$/;
+            var num = /^\d{6,}$/ || /^\d{9,}$/;
             var isCode = num.test(this.value[0]);
             var isValid = void 0;
 
@@ -5030,7 +5211,7 @@ if (false) {(function () {
             this.isCode = isCode;
         },
         setDefaultValue: function setDefaultValue() {
-            var _this3 = this;
+            var _this4 = this;
 
             var provinceCode = '';
 
@@ -5038,18 +5219,18 @@ if (false) {(function () {
                 provinceCode = this.defaults[0];
             } else {
                 var province = lodash_find_default()(this.provinces, function (item) {
-                    return item === _this3.defaults[0];
+                    return item === _this4.defaults[0];
                 });
                 assert(province, '\u7701\u4EFD ' + this.defaults[0] + ' \u4E0D\u5B58\u5728');
                 provinceCode = lodash_find_default()(keys_default()(this.provinces), function (item) {
-                    return _this3.provinces[item] === _this3.defaults[0];
+                    return _this4.provinces[item] === _this4.defaults[0];
                 });
             }
             this.curProvinceCode = provinceCode;
 
             // 还原默认值，避免用户选择出错
             this.$nextTick(function () {
-                _this3.defaults = [];
+                _this4.defaults = [];
                 // this.isCode = false;
             });
         },
@@ -5059,10 +5240,29 @@ if (false) {(function () {
                 // this.emitter.emit('set-def-values', codes, labels);
             }
             this.isSetDefault = true;
-
-            if (labels[0] === labels[1]) {
-                // 纠正台湾省的 code 返回
-                codes[1] = codes[0];
+            if (codes[0] === '820000') {
+                if (this.level == '2') {
+                    codes[2] = '0';
+                    codes[3] = '0';
+                } else if (this.level == '1') {
+                    codes[2] = '0';
+                }
+            } else if (codes[0] === '810000' || codes[0] === '710000') {
+                if (this.level == '2') {
+                    codes[3] = '0';
+                }
+            }
+            if (labels[0] === '澳门') {
+                if (this.level == '2') {
+                    labels[2] = '';
+                    labels[3] = '';
+                } else if (this.level == '1') {
+                    labels[2] = '';
+                }
+            } else if (labels[0] === '台湾' || labels[0] === '香港') {
+                if (this.level == '2') {
+                    labels[3] = '';
+                }
             }
 
             if (this.type === 'code') {
@@ -5092,31 +5292,30 @@ if (false) {(function () {
         iterateCities: function iterateCities() {
             var temp = [];
             var provinces = this.iterate(this.data['86'], 0);
-
             for (var i = 0, l = provinces.length; i < l; i++) {
                 var item = {};
                 item['label'] = provinces[i].label;
                 item['value'] = provinces[i].value;
                 item['panelIndex'] = provinces[i].panelIndex;
-
                 item['children'] = this.iterate(this.data[provinces[i].value], 1);
                 temp.push(item);
             }
-
             return temp;
         },
         iterateAreas: function iterateAreas() {
             var temp = [];
             var cities = this.iterateCities();
-
             for (var i = 0, c = cities.length; i < c; i++) {
                 var city = cities[i];
                 for (var j = 0, l = city.children.length; j < l; j++) {
-                    var item = city.children[j];
-                    var areas = this.iterate(this.data[city.children[j].value], 2);
-                    // fix #7
-                    if (areas.length) {
-                        item['children'] = areas;
+                    var item = {};
+                    item['label'] = city.children[j].label;
+                    item['value'] = city.children[j].value;
+                    item['panelIndex'] = city.children[j].panelIndex;
+                    // item['children'] = this.iterate(this.data[city.children[j].value], 2);
+                    var areaNew = this.iterate(this.data[city.children[j].value], 2);
+                    if (areaNew.length) {
+                        item['children'] = areaNew;
                     } else {
                         item['children'] = [{
                             label: item.label,
@@ -5124,8 +5323,40 @@ if (false) {(function () {
                             panelIndex: 2
                         }];
                     }
+                    city.children[j] = item;
                 }
                 temp.push(city);
+            }
+            return temp;
+        },
+        iterateStreet: function iterateStreet() {
+            var temp = [];
+            var areaNow = this.iterateAreas();
+            for (var i = 0, c = areaNow.length; i < c; i++) {
+                var areaNext = areaNow[i];
+                for (var j = 0, l = areaNext.children.length; j < l; j++) {
+                    var areaNew = areaNext.children[j];
+                    for (var k = 0, m = areaNew.children.length; k < m; k++) {
+                        var areaLast = areaNew.children[k];
+                        var streetNew = this.iterate(this.data[areaLast.value], 3);
+                        var item = {};
+                        item['label'] = areaLast.label;
+                        item['value'] = areaLast.value;
+                        item['panelIndex'] = areaLast.panelIndex;
+                        // item['children'] = this.iterate(this.data[areaLast.value], 3);
+                        if (streetNew.length) {
+                            item['children'] = streetNew;
+                        } else {
+                            item['children'] = [{
+                                label: item.label,
+                                value: item.value,
+                                panelIndex: 3
+                            }];
+                        }
+                        areaNew.children[k] = item;
+                    }
+                }
+                temp.push(areaNext);
             }
             return temp;
         },
@@ -5143,6 +5374,9 @@ if (false) {(function () {
                 case 1:
                     codes = [this.curProvinceCode, this.curCityCode, this.curAreaCode];
                     break;
+                case 2:
+                    codes = [this.curProvinceCode, this.curCityCode, this.curAreaCode, this.curStreetCode];
+                    break;
             }
             this.defaultsAreaCodes = [].concat(codes);
         }
@@ -5153,8 +5387,10 @@ if (false) {(function () {
             this.options = this.iterateCities();
         } else if (this.level === 1) {
             this.options = this.iterateAreas();
+        } else if (this.level === 2) {
+            this.options = this.iterateStreet();
         } else {
-            assert(false, '\u8BBE\u7F6E\u7684 level \u503C\u53EA\u652F\u6301 0/1');
+            assert(false, '\u8BBE\u7F6E\u7684 level \u503C\u53EA\u652F\u6301 0/1/2');
         }
 
         if (isArray(this.value) && this.value.length === this.level + 2) {

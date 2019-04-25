@@ -1,33 +1,4 @@
-.start {
-  margin-top: 40px;
-}
-.start h3 {
-  text-align: center;
-  font-size: 25px;
-  color: #6289ad;
-}
-.start h4 {
-  font-size: 18px;
-  color: #6289ad;
-}
-.start pre {
-  margin-top: 15px;
-  background: #f8f8f8;
-  padding: 15px 10px;
-  color: #000;
-  font-size: 16px;
-  font-weight: 400;
-}
-.start .install {
-  margin-top: 20px;
-}
-.start .install p {
-  margin-top: 20px;
-  margin-bottom: 20px;
-}
-.start .register {
-  margin-top: 20px;
-}html, body, div, span, applet, object, iframe,
+html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
 del, dfn, em, img, ins, kbd, q, s, samp,
@@ -167,7 +138,36 @@ input, select {
 /* el-scrollbar */
 /* .size-example .area-select.large .el-select:last-child{
     margin-left: 30px
-} */.app-main {
+} */.start {
+  margin-top: 40px;
+}
+.start h3 {
+  text-align: center;
+  font-size: 25px;
+  color: #6289ad;
+}
+.start h4 {
+  font-size: 18px;
+  color: #6289ad;
+}
+.start pre {
+  margin-top: 15px;
+  background: #f8f8f8;
+  padding: 15px 10px;
+  color: #000;
+  font-size: 16px;
+  font-weight: 400;
+}
+.start .install {
+  margin-top: 20px;
+}
+.start .install p {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.start .register {
+  margin-top: 20px;
+}.app-main {
   margin-top: 20px;
 }
 .app-main h3 {

@@ -24,7 +24,7 @@
             }
         },
         methods: {
-            toggle() {
+            toggle () {
                 this.shown = !this.shown;
             }
         }

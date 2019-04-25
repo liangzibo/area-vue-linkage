@@ -68,7 +68,7 @@ module.exports =
 /* 0 */
 /***/ (function(module, exports) {
 
-var core = module.exports = { version: '2.5.7' };
+var core = module.exports = { version: '2.6.5' };
 if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
 
 
@@ -580,7 +580,7 @@ var store = global[SHARED] || (global[SHARED] = {});
 })('versions', []).push({
   version: core.version,
   mode: __webpack_require__(24) ? 'pure' : 'global',
-  copyright: '© 2018 Denis Pushkarev (zloirock.ru)'
+  copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
 });
 
 
@@ -3666,12 +3666,12 @@ var key = 0;
         this.cascader.eventBus.$on('set-scroll-top', this.scrollToSelectedOption);
     }
 });
-// CONCATENATED MODULE: ./node_modules/vue-loader/lib/template-compiler?{"id":"data-v-178d61cd","hasScoped":false,"buble":{"transforms":{}}}!./node_modules/vue-loader/lib/selector.js?type=template&index=0!./components/area-cascader/cascader/caspanel.vue
+// CONCATENATED MODULE: ./node_modules/vue-loader/lib/template-compiler?{"id":"data-v-61384f11","hasScoped":false,"buble":{"transforms":{}}}!./node_modules/vue-loader/lib/selector.js?type=template&index=0!./components/area-cascader/cascader/caspanel.vue
 var render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('span',[_c('ul',{ref:"list",staticClass:"cascader-menu-list"},_vm._l((_vm.data),function(item,index){return _c('li',{key:_vm.getUniqueKey(index),class:{
                 'cascader-menu-option': true,
                 'cascader-menu-extensible': item['children'],
                 'selected': _vm.cascader.activeValues.includes(item.value)//cascader.useTmp ? cascader.tmpVals.includes(item.value) : cascader.vals.includes(item.value)
-            },on:{"click":function($event){$event.stopPropagation();_vm.handleClickItem(item)}}},[_vm._v("\n            "+_vm._s(item.label)+"\n        ")])})),_vm._v(" "),(_vm.sublist && _vm.sublist.length)?_c('caspanel',{attrs:{"data":_vm.sublist}}):_vm._e()],1)}
+            },on:{"click":function($event){$event.stopPropagation();return _vm.handleClickItem(item)}}},[_vm._v("\n            "+_vm._s(item.label)+"\n        ")])}),0),_vm._v(" "),(_vm.sublist && _vm.sublist.length)?_c('caspanel',{attrs:{"data":_vm.sublist}}):_vm._e()],1)}
 var staticRenderFns = []
 var esExports = { render: render, staticRenderFns: staticRenderFns }
 /* harmony default export */ var cascader_caspanel = (esExports);
@@ -4021,9 +4021,9 @@ var cascader_Component = cascader_normalizeComponent(
         },
         level: {
             type: Number,
-            default: 0, // 0->二联 1->三联
+            default: 0, // 0->二联 1->三联 2->四联
             validator: function validator(val) {
-                return [0, 1].indexOf(val) > -1;
+                return [0, 1, 2].indexOf(val) > -1;
             }
         },
         size: {
@@ -4055,6 +4055,7 @@ var cascader_Component = cascader_normalizeComponent(
             provinces: this.data['86'],
             citys: {},
             areas: {},
+            streets: {},
             // only array
             options: [],
 
@@ -4064,6 +4065,8 @@ var cascader_Component = cascader_normalizeComponent(
             curCityCode: '',
             curArea: '',
             curAreaCode: '',
+            curStreet: '',
+            curStreetCode: '',
 
             // 设置默认值的判断
             defaultsAreaCodes: [], // 默认值对应的 code
@@ -4090,7 +4093,6 @@ var cascader_Component = cascader_normalizeComponent(
 
             this.curProvince = this.provinces[val];
             this.citys = this.data[val];
-
             if (!this.citys) {
                 this.citys = defineProperty_default()({}, this.curProvinceCode, this.curProvince);
                 this.curCity = this.curProvince;
@@ -4128,7 +4130,7 @@ var cascader_Component = cascader_normalizeComponent(
             this.curCity = this.citys[val];
             if (this.level === 0) {
                 this.setDefaultsCodes();
-            } else if (this.level === 1) {
+            } else if (this.level >= 1) {
                 this.areas = this.data[val];
                 if (!this.areas) {
                     this.areas = defineProperty_default()({}, this.curCityCode, this.curCity);
@@ -4163,8 +4165,49 @@ var cascader_Component = cascader_normalizeComponent(
             }
         },
         curAreaCode: function curAreaCode(val) {
+            var _this3 = this;
+
             this.curArea = this.areas[val];
-            this.curAreaCode = val;
+            if (this.level === 1) {
+                this.setDefaultsCodes();
+            } else if (this.level >= 2) {
+                this.streets = this.data[val];
+                if (!this.streets) {
+                    this.streets = defineProperty_default()({}, this.curAreaCode, this.curArea);
+                    this.curStreet = this.curArea;
+                    this.curStreetCode = this.curAreaCode;
+                    return;
+                }
+
+                var curStreet = values_default()(this.streets)[0];
+                var curStreetCode = keys_default()(this.streets)[0];
+
+                if (this.defaults[3]) {
+                    if (this.isCode) {
+                        curStreetCode = lodash_find_default()(keys_default()(this.streets), function (item) {
+                            return item === _this3.defaults[3];
+                        });
+                        Object(utils["a" /* assert */])(curStreetCode, '\u8857\u9053 ' + this.defaults[3] + ' \u4E0D\u5B58\u5728\u4E8E\u53BF\u533A ' + this.defaults[2] + ' \u4E2D');
+                        curStreet = this.streets[curStreetCode];
+                    } else {
+                        curStreet = lodash_find_default()(this.streets, function (item) {
+                            return item === _this3.defaults[3];
+                        });
+                        Object(utils["a" /* assert */])(curStreet, '\u8857\u9053 ' + this.defaults[3] + ' \u4E0D\u5B58\u5728\u4E8E\u53BF\u533A ' + this.defaults[2] + ' \u4E2D');
+                        curStreetCode = lodash_find_default()(keys_default()(this.streets), function (item) {
+                            return _this3.streets[item] === _this3.defaults[3];
+                        });
+                    }
+                }
+
+                this.curStreet = curStreet;
+                this.curStreetCode = curStreetCode;
+            }
+        },
+        curStreetCode: function curStreetCode(val) {
+
+            this.curStreet = this.streets[val];
+            this.curStreetCode = val;
             this.setDefaultsCodes();
         }
     },
@@ -4172,7 +4215,7 @@ var cascader_Component = cascader_normalizeComponent(
     methods: {
         beforeSetDefault: function beforeSetDefault() {
             var chinese = /^[\u4E00-\u9FA5\uF900-\uFA2D]{2,}$/;
-            var num = /^\d{6,}$/;
+            var num = /^\d{6,}$/ || /^\d{9,}$/;
             var isCode = num.test(this.value[0]);
             var isValid = void 0;
 
@@ -4192,7 +4235,7 @@ var cascader_Component = cascader_normalizeComponent(
             this.isCode = isCode;
         },
         setDefaultValue: function setDefaultValue() {
-            var _this3 = this;
+            var _this4 = this;
 
             var provinceCode = '';
 
@@ -4200,18 +4243,18 @@ var cascader_Component = cascader_normalizeComponent(
                 provinceCode = this.defaults[0];
             } else {
                 var province = lodash_find_default()(this.provinces, function (item) {
-                    return item === _this3.defaults[0];
+                    return item === _this4.defaults[0];
                 });
                 Object(utils["a" /* assert */])(province, '\u7701\u4EFD ' + this.defaults[0] + ' \u4E0D\u5B58\u5728');
                 provinceCode = lodash_find_default()(keys_default()(this.provinces), function (item) {
-                    return _this3.provinces[item] === _this3.defaults[0];
+                    return _this4.provinces[item] === _this4.defaults[0];
                 });
             }
             this.curProvinceCode = provinceCode;
 
             // 还原默认值，避免用户选择出错
             this.$nextTick(function () {
-                _this3.defaults = [];
+                _this4.defaults = [];
                 // this.isCode = false;
             });
         },
@@ -4221,10 +4264,29 @@ var cascader_Component = cascader_normalizeComponent(
                 // this.emitter.emit('set-def-values', codes, labels);
             }
             this.isSetDefault = true;
-
-            if (labels[0] === labels[1]) {
-                // 纠正台湾省的 code 返回
-                codes[1] = codes[0];
+            if (codes[0] === '820000') {
+                if (this.level == '2') {
+                    codes[2] = '0';
+                    codes[3] = '0';
+                } else if (this.level == '1') {
+                    codes[2] = '0';
+                }
+            } else if (codes[0] === '810000' || codes[0] === '710000') {
+                if (this.level == '2') {
+                    codes[3] = '0';
+                }
+            }
+            if (labels[0] === '澳门') {
+                if (this.level == '2') {
+                    labels[2] = '';
+                    labels[3] = '';
+                } else if (this.level == '1') {
+                    labels[2] = '';
+                }
+            } else if (labels[0] === '台湾' || labels[0] === '香港') {
+                if (this.level == '2') {
+                    labels[3] = '';
+                }
             }
 
             if (this.type === 'code') {
@@ -4254,31 +4316,30 @@ var cascader_Component = cascader_normalizeComponent(
         iterateCities: function iterateCities() {
             var temp = [];
             var provinces = this.iterate(this.data['86'], 0);
-
             for (var i = 0, l = provinces.length; i < l; i++) {
                 var item = {};
                 item['label'] = provinces[i].label;
                 item['value'] = provinces[i].value;
                 item['panelIndex'] = provinces[i].panelIndex;
-
                 item['children'] = this.iterate(this.data[provinces[i].value], 1);
                 temp.push(item);
             }
-
             return temp;
         },
         iterateAreas: function iterateAreas() {
             var temp = [];
             var cities = this.iterateCities();
-
             for (var i = 0, c = cities.length; i < c; i++) {
                 var city = cities[i];
                 for (var j = 0, l = city.children.length; j < l; j++) {
-                    var item = city.children[j];
-                    var areas = this.iterate(this.data[city.children[j].value], 2);
-                    // fix #7
-                    if (areas.length) {
-                        item['children'] = areas;
+                    var item = {};
+                    item['label'] = city.children[j].label;
+                    item['value'] = city.children[j].value;
+                    item['panelIndex'] = city.children[j].panelIndex;
+                    // item['children'] = this.iterate(this.data[city.children[j].value], 2);
+                    var areaNew = this.iterate(this.data[city.children[j].value], 2);
+                    if (areaNew.length) {
+                        item['children'] = areaNew;
                     } else {
                         item['children'] = [{
                             label: item.label,
@@ -4286,8 +4347,40 @@ var cascader_Component = cascader_normalizeComponent(
                             panelIndex: 2
                         }];
                     }
+                    city.children[j] = item;
                 }
                 temp.push(city);
+            }
+            return temp;
+        },
+        iterateStreet: function iterateStreet() {
+            var temp = [];
+            var areaNow = this.iterateAreas();
+            for (var i = 0, c = areaNow.length; i < c; i++) {
+                var areaNext = areaNow[i];
+                for (var j = 0, l = areaNext.children.length; j < l; j++) {
+                    var areaNew = areaNext.children[j];
+                    for (var k = 0, m = areaNew.children.length; k < m; k++) {
+                        var areaLast = areaNew.children[k];
+                        var streetNew = this.iterate(this.data[areaLast.value], 3);
+                        var item = {};
+                        item['label'] = areaLast.label;
+                        item['value'] = areaLast.value;
+                        item['panelIndex'] = areaLast.panelIndex;
+                        // item['children'] = this.iterate(this.data[areaLast.value], 3);
+                        if (streetNew.length) {
+                            item['children'] = streetNew;
+                        } else {
+                            item['children'] = [{
+                                label: item.label,
+                                value: item.value,
+                                panelIndex: 3
+                            }];
+                        }
+                        areaNew.children[k] = item;
+                    }
+                }
+                temp.push(areaNext);
             }
             return temp;
         },
@@ -4305,6 +4398,9 @@ var cascader_Component = cascader_normalizeComponent(
                 case 1:
                     codes = [this.curProvinceCode, this.curCityCode, this.curAreaCode];
                     break;
+                case 2:
+                    codes = [this.curProvinceCode, this.curCityCode, this.curAreaCode, this.curStreetCode];
+                    break;
             }
             this.defaultsAreaCodes = [].concat(codes);
         }
@@ -4315,8 +4411,10 @@ var cascader_Component = cascader_normalizeComponent(
             this.options = this.iterateCities();
         } else if (this.level === 1) {
             this.options = this.iterateAreas();
+        } else if (this.level === 2) {
+            this.options = this.iterateStreet();
         } else {
-            Object(utils["a" /* assert */])(false, '\u8BBE\u7F6E\u7684 level \u503C\u53EA\u652F\u6301 0/1');
+            Object(utils["a" /* assert */])(false, '\u8BBE\u7F6E\u7684 level \u503C\u53EA\u652F\u6301 0/1/2');
         }
 
         if (Object(utils["c" /* isArray */])(this.value) && this.value.length === this.level + 2) {
@@ -4329,7 +4427,7 @@ var cascader_Component = cascader_normalizeComponent(
         }
     }
 });
-// CONCATENATED MODULE: ./node_modules/vue-loader/lib/template-compiler?{"id":"data-v-5ab90ac5","hasScoped":false,"buble":{"transforms":{}}}!./node_modules/vue-loader/lib/selector.js?type=template&index=0!./components/area-cascader/index.vue
+// CONCATENATED MODULE: ./node_modules/vue-loader/lib/template-compiler?{"id":"data-v-76427477","hasScoped":false,"buble":{"transforms":{}}}!./node_modules/vue-loader/lib/selector.js?type=template&index=0!./components/area-cascader/index.vue
 var area_cascader_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"area-cascader-wrap"},[_c('v-cascader',{attrs:{"placeholder":_vm.placeholder,"options":_vm.options,"defaultsAreaCodes":_vm.defaultsAreaCodes,"size":_vm.size,"disabled":_vm.disabled,"separator":_vm.separator,"data":_vm.data},on:{"setDefault":function($event){_vm.isSetDefault = true},"change":_vm.handleChange}})],1)}
 var area_cascader_staticRenderFns = []
 var area_cascader_esExports = { render: area_cascader_render, staticRenderFns: area_cascader_staticRenderFns }

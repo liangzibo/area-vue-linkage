@@ -68,7 +68,7 @@ module.exports =
 /* 0 */
 /***/ (function(module, exports) {
 
-var core = module.exports = { version: '2.5.7' };
+var core = module.exports = { version: '2.6.5' };
 if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
 
 
@@ -564,7 +564,7 @@ var store = global[SHARED] || (global[SHARED] = {});
 })('versions', []).push({
   version: core.version,
   mode: __webpack_require__(24) ? 'pure' : 'global',
-  copyright: '© 2018 Denis Pushkarev (zloirock.ru)'
+  copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
 });
 
 
@@ -3763,6 +3763,16 @@ var option_Component = option_normalizeComponent(
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -3797,9 +3807,9 @@ var option_Component = option_normalizeComponent(
         },
         level: {
             type: Number,
-            default: 1, // 0-->一联 1->二联 2->三联
+            default: 1, // 0-->一联 1->二联 2->三联 3->四联
             validator: function validator(val) {
-                return [0, 1, 2].indexOf(val) > -1;
+                return [0, 1, 2, 3].indexOf(val) > -1;
             }
         },
         size: {
@@ -3834,18 +3844,20 @@ var option_Component = option_normalizeComponent(
             provinces: this.data['86'],
             citys: {},
             areas: {},
-
+            streets: {},
             curProvince: '', // text
             curProvinceCode: '', // code
             curCity: '',
             curCityCode: '',
             curArea: '',
             curAreaCode: '',
+            curStreet: '',
+            curStreetCode: '',
 
             // 设置默认值的判断
             defaults: [],
             isCode: false,
-            isSetDefault: false
+            isSetDefault: true
         };
     },
 
@@ -3862,6 +3874,10 @@ var option_Component = option_normalizeComponent(
         curAreaCode: function curAreaCode(val, oldVal) {
             this.curArea = this.areas[val];
             this.areaChange(val, oldVal === val);
+        },
+        curStreetCode: function curStreetCode(val, oldVal) {
+            this.curStreet = this.streets[val];
+            this.streetChange(val, oldVal === val);
         },
         value: function value(val) {
             if (!this.isSetDefault && Object(utils["c" /* isArray */])(val) && val.length === this.level + 1) {
@@ -3889,12 +3905,10 @@ var option_Component = option_normalizeComponent(
                         this.curCity = this.curProvince;
                         this.curCityCode = this.curCityCode;
                     }
-                    return;
+                    // return;
                 }
-
                 var curCity = values_default()(this.citys)[0];
                 var curCityCode = keys_default()(this.citys)[0];
-
                 if (this.defaults[1]) {
                     if (this.isCode) {
                         curCityCode = lodash_find_default()(keys_default()(this.citys), function (item) {
@@ -3921,6 +3935,8 @@ var option_Component = option_normalizeComponent(
                     this.curCityCode = '';
                     this.curArea = '';
                     this.curAreaCode = '';
+                    this.curStreet = '';
+                    this.curStreetCode = '';
                     this.selectChange();
                 }
             }
@@ -3930,7 +3946,7 @@ var option_Component = option_normalizeComponent(
 
             if (this.level === 1) {
                 this.selectChange();
-            } else if (this.level === 2) {
+            } else if (this.level >= 2) {
                 this.areas = this.data[val];
                 if (!this.areas) {
                     // fix 市级下不存在城区(#7)
@@ -3939,7 +3955,7 @@ var option_Component = option_normalizeComponent(
                         this.curArea = this.curCity;
                         this.curAreaCode = this.curCityCode;
                     }
-                    return;
+                    // return;
                 }
 
                 var curArea = values_default()(this.areas)[0];
@@ -3969,12 +3985,71 @@ var option_Component = option_normalizeComponent(
                 } else if (!isEqual) {
                     this.curArea = '';
                     this.curAreaCode = '';
+                    this.curStreet = '';
+                    this.curStreetCode = '';
                     this.selectChange();
                 }
             }
         },
-        areaChange: function areaChange(val) {
-            this.curAreaCode = val;
+        areaChange: function areaChange(val, isEqual) {
+            var _this3 = this;
+
+            if (this.level === 2) {
+                this.selectChange();
+            } else if (this.level === 3) {
+                this.streets = this.data[val];
+                // if(!this.streets) {
+                //     this.streets = {
+                //         [this.curAreaCode]: this.curArea
+                //     };
+                //     if (!this.disableLinkage) {
+                //         this.curStreet = this.curStreet;
+                //         this.curStreetCode = this.curStreetCode;
+                //     }
+                // }
+                if (!this.streets) {
+                    // fix 县区级下不存在街道(#7)
+                    this.streets = defineProperty_default()({}, this.curAreaCode, this.curArea);
+                    if (!this.disableLinkage) {
+                        this.curStreet = this.curStreet;
+                        this.curStreetCode = this.curStreetCode;
+                    }
+                    // return;
+                }
+
+                var curStreet = values_default()(this.streets)[0];
+                var curStreetCode = keys_default()(this.streets)[0];
+
+                if (this.defaults[3]) {
+                    if (this.isCode) {
+                        curStreetCode = lodash_find_default()(keys_default()(this.streets), function (item) {
+                            return item === _this3.defaults[3];
+                        });
+                        Object(utils["a" /* assert */])(curStreetCode, '\u8857\u9053 ' + this.defaults[2] + ' \u4E0D\u5B58\u5728\u4E8E\u53BF\u533A ' + this.defaults[2] + ' \u4E2D');
+                        curStreet = this.streets[curStreetCode];
+                    } else {
+                        curStreet = lodash_find_default()(this.streets, function (item) {
+                            return item === _this3.defaults[3];
+                        });
+                        Object(utils["a" /* assert */])(curStreet, '\u8857\u9053 ' + this.defaults[2] + ' \u4E0D\u5B58\u5728\u4E8E\u53BF\u533A ' + this.defaults[2] + ' \u4E2D');
+                        curStreetCode = lodash_find_default()(keys_default()(this.streets), function (item) {
+                            return _this3.streets[item] === _this3.defaults[3];
+                        });
+                    }
+                }
+
+                if (!this.disableLinkage) {
+                    this.curStreet = curStreet;
+                    this.curStreetCode = curStreetCode;
+                } else if (!isEqual) {
+                    this.curStreet = '';
+                    this.curStreetCode = '';
+                    this.selectChange();
+                }
+            }
+        },
+        streetChange: function streetChange(val) {
+            this.curStreetCode = val;
             this.selectChange();
         },
         getAreaCode: function getAreaCode() {
@@ -3989,10 +4064,23 @@ var option_Component = option_normalizeComponent(
                     break;
                 case 2:
                     // fix #32 710000是台湾省
-                    codes = [this.curProvinceCode, this.curProvinceCode === '710000' ? this.curProvinceCode : this.curCityCode, this.curAreaCode];
+                    if (this.curProvinceCode == '820000') {
+                        codes = [this.curProvinceCode, this.curCityCode, '0'];
+                    } else {
+                        codes = [this.curProvinceCode, this.curCityCode, this.curAreaCode];
+                    }
+                    break;
+                case 3:
+                    // fix #32 710000是台湾省
+                    if (this.curProvinceCode == '820000') {
+                        codes = [this.curProvinceCode, this.curCityCode, '0', '0'];
+                    } else if (this.curProvinceCode == '810000' || this.curProvinceCode == '710000') {
+                        codes = [this.curProvinceCode, this.curCityCode, this.curAreaCode, '0'];
+                    } else {
+                        codes = [this.curProvinceCode, this.curCityCode, this.curAreaCode, this.curStreetCode];
+                    }
                     break;
             }
-
             return codes;
         },
         getAreaText: function getAreaText() {
@@ -4004,13 +4092,26 @@ var option_Component = option_normalizeComponent(
                     break;
                 case 1:
                     // fix #32 710000是台湾省
-                    texts = [this.curProvince, this.curProvinceCode === '710000' ? this.curProvince : this.curCity];
+                    texts = [this.curProvince, this.curCity];
                     break;
                 case 2:
-                    texts = [this.curProvince, this.curProvinceCode === '710000' ? this.curProvince : this.curCity, this.curArea];
+                    if (this.curProvince == '澳门') {
+                        texts = [this.curProvince, this.curCity, ''];
+                    } else {
+                        texts = [this.curProvince, this.curCity, this.curArea];
+                    }
+                    break;
+                case 3:
+                    if (this.curProvince == '澳门') {
+                        texts = [this.curProvince, this.curCity, '', ''];
+                    } else if (this.curProvince == '香港' || this.curProvince == '台湾') {
+                        texts = [this.curProvince, this.curCity, this.curArea, ''];
+                    } else {
+                        texts = [this.curProvince, this.curCity, this.curArea, this.curStreet];
+                    }
+
                     break;
             }
-
             return texts;
         },
         getAreaCodeAndText: function getAreaCodeAndText(selected) {
@@ -4025,9 +4126,10 @@ var option_Component = option_normalizeComponent(
                     textCodes = [defineProperty_default()({}, this.curProvinceCode, this.curProvince), defineProperty_default()({}, this.curCityCode, this.curCity)];
                     break;
                 case 2:
-                    var cityCode = this.curProvinceCode === '710000' ? this.curProvinceCode : this.curCityCode;
-                    var cityText = this.curProvinceCode === '710000' ? this.curProvince : this.curCity;
-                    textCodes = [defineProperty_default()({}, this.curProvinceCode, this.curProvince), defineProperty_default()({}, cityCode, cityText), defineProperty_default()({}, this.curAreaCode, this.curArea)];
+                    textCodes = [defineProperty_default()({}, this.curProvinceCode, this.curProvince), defineProperty_default()({}, this.curCityCode, this.curCity), defineProperty_default()({}, this.curAreaCode, this.curArea)];
+                    break;
+                case 3:
+                    textCodes = [defineProperty_default()({}, this.curProvinceCode, this.curProvince), defineProperty_default()({}, this.curCityCode, this.curCity), defineProperty_default()({}, this.curAreaCode, this.curArea), defineProperty_default()({}, this.curStreetCode, this.curStreet)];
                     break;
             }
 
@@ -4056,7 +4158,7 @@ var option_Component = option_normalizeComponent(
             this.isSetDefault = true;
         },
         setDefaultValue: function setDefaultValue() {
-            var _this3 = this;
+            var _this4 = this;
 
             var provinceCode = '';
 
@@ -4064,25 +4166,24 @@ var option_Component = option_normalizeComponent(
                 provinceCode = this.defaults[0];
             } else {
                 var province = lodash_find_default()(this.provinces, function (item) {
-                    return item === _this3.defaults[0];
+                    return item === _this4.defaults[0];
                 });
                 Object(utils["a" /* assert */])(province, '\u7701\u4EFD ' + this.defaults[0] + ' \u4E0D\u5B58\u5728');
                 provinceCode = lodash_find_default()(keys_default()(this.provinces), function (item) {
-                    return _this3.provinces[item] === _this3.defaults[0];
+                    return _this4.provinces[item] === _this4.defaults[0];
                 });
             }
             this.curProvinceCode = provinceCode;
             // 还原默认值，避免用户选择出错
             this.$nextTick(function () {
-                _this3.defaults = [];
+                _this4.defaults = [];
                 // this.isCode = false;
-                _this3.isSetDefault = false;
+                _this4.isSetDefault = false;
             });
         },
         selectChange: function selectChange() {
             this.isSetDefault = true;
             var res = [];
-
             if (this.type === 'code') {
                 res = this.getAreaCode();
             } else if (this.type === 'text') {
@@ -4106,8 +4207,8 @@ var option_Component = option_normalizeComponent(
         }
     }
 });
-// CONCATENATED MODULE: ./node_modules/vue-loader/lib/template-compiler?{"id":"data-v-7c5a873e","hasScoped":false,"buble":{"transforms":{}}}!./node_modules/vue-loader/lib/selector.js?type=template&index=0!./components/area-select/index.vue
-var area_select_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"area-select-wrap"},[_c('v-select',{attrs:{"placeholder":_vm.placeholders[0] ? _vm.placeholders[0] : '请选择',"size":_vm.size,"disabled":_vm.disabled},model:{value:(_vm.curProvinceCode),callback:function ($$v) {_vm.curProvinceCode=$$v},expression:"curProvinceCode"}},_vm._l((_vm.provinces),function(val,key){return _c('v-option',{key:key,attrs:{"label":val,"value":key}})})),_vm._v(" "),(_vm.level>=1)?_c('v-select',{attrs:{"placeholder":_vm.placeholders[1] ? _vm.placeholders[1] : '请选择',"size":_vm.size,"disabled":_vm.disabled},model:{value:(_vm.curCityCode),callback:function ($$v) {_vm.curCityCode=$$v},expression:"curCityCode"}},[(!Object.keys(_vm.citys).length)?_c('p',{staticClass:"area-select-empty"},[_vm._v("暂无数据")]):_vm._l((_vm.citys),function(val,key){return _c('v-option',{key:key,attrs:{"label":val,"value":key}})})],2):_vm._e(),_vm._v(" "),(_vm.level>=2)?_c('v-select',{attrs:{"placeholder":_vm.placeholders[2] ? _vm.placeholders[2] : '请选择',"size":_vm.size,"disabled":_vm.disabled},model:{value:(_vm.curAreaCode),callback:function ($$v) {_vm.curAreaCode=$$v},expression:"curAreaCode"}},[(!Object.keys(_vm.areas).length)?_c('p',{staticClass:"area-select-empty"},[_vm._v("暂无数据")]):_vm._l((_vm.areas),function(val,key){return _c('v-option',{key:key,attrs:{"label":val,"value":key}})})],2):_vm._e()],1)}
+// CONCATENATED MODULE: ./node_modules/vue-loader/lib/template-compiler?{"id":"data-v-4c842472","hasScoped":false,"buble":{"transforms":{}}}!./node_modules/vue-loader/lib/selector.js?type=template&index=0!./components/area-select/index.vue
+var area_select_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"area-select-wrap"},[_c('v-select',{attrs:{"placeholder":_vm.placeholders[0] ? _vm.placeholders[0] : '请选择',"size":_vm.size,"disabled":_vm.disabled},model:{value:(_vm.curProvinceCode),callback:function ($$v) {_vm.curProvinceCode=$$v},expression:"curProvinceCode"}},_vm._l((_vm.provinces),function(val,key){return _c('v-option',{key:key,attrs:{"label":val,"value":key}})}),1),_vm._v(" "),(_vm.level>=1)?_c('v-select',{attrs:{"placeholder":_vm.placeholders[1] ? _vm.placeholders[1] : '请选择',"size":_vm.size,"disabled":_vm.disabled},model:{value:(_vm.curCityCode),callback:function ($$v) {_vm.curCityCode=$$v},expression:"curCityCode"}},[(!Object.keys(_vm.citys).length)?_c('p',{staticClass:"area-select-empty"},[_vm._v("暂无数据")]):_vm._l((_vm.citys),function(val,key){return _c('v-option',{key:key,attrs:{"label":val,"value":key}})})],2):_vm._e(),_vm._v(" "),(_vm.level>=2)?_c('v-select',{attrs:{"placeholder":_vm.placeholders[2] ? _vm.placeholders[2] : '请选择',"size":_vm.size,"disabled":_vm.disabled},model:{value:(_vm.curAreaCode),callback:function ($$v) {_vm.curAreaCode=$$v},expression:"curAreaCode"}},[(!Object.keys(_vm.areas).length)?_c('p',{staticClass:"area-select-empty"},[_vm._v("暂无数据")]):_vm._l((_vm.areas),function(val,key){return _c('v-option',{key:key,attrs:{"label":val,"value":key}})})],2):_vm._e(),_vm._v(" "),(_vm.level>=3)?_c('v-select',{attrs:{"placeholder":_vm.placeholders[3] ? _vm.placeholders[3] : '请选择',"size":_vm.size,"disabled":_vm.disabled},model:{value:(_vm.curStreetCode),callback:function ($$v) {_vm.curStreetCode=$$v},expression:"curStreetCode"}},[(!Object.keys(_vm.streets).length)?_c('p',{staticClass:"area-select-empty"},[_vm._v("暂无数据")]):_vm._l((_vm.streets),function(val,key){return _c('v-option',{key:key,attrs:{"label":val,"value":key}})})],2):_vm._e()],1)}
 var area_select_staticRenderFns = []
 var area_select_esExports = { render: area_select_render, staticRenderFns: area_select_staticRenderFns }
 /* harmony default export */ var selectortype_template_index_0_components_area_select = (area_select_esExports);
@@ -4160,7 +4261,7 @@ var content = __webpack_require__(55);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(57)("16d0bc8a", content, true, {});
+var update = __webpack_require__(57)("174eac3c", content, true, {});
 
 /***/ }),
 /* 55 */
