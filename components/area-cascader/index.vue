@@ -105,7 +105,6 @@
             },
 
             curProvinceCode (val) {
-
                 this.curProvince = this.provinces[val];
                 this.citys = this.data[val];
                 if (!this.citys) {
@@ -137,7 +136,6 @@
             },
 
             curCityCode (val) {
-
                 this.curCity = this.citys[val];
                 if (this.level === 0) {
                     this.setDefaultsCodes();
@@ -173,7 +171,6 @@
             },
 
             curAreaCode (val) {
-
                 this.curArea = this.areas[val];
                 if (this.level === 1) {
                     this.setDefaultsCodes();
@@ -208,7 +205,6 @@
                 }
             },
             curStreetCode (val) {
-
                 this.curStreet = this.streets[val];
                 this.curStreetCode = val;
                 this.setDefaultsCodes();
@@ -259,30 +255,6 @@
                     // this.emitter.emit('set-def-values', codes, labels);
                 }
                 this.isSetDefault = true;
-                if (codes[0] === '820000') {
-                    if(this.level == '2') {
-                        codes[2] = '0';
-                        codes[3] = '0';
-                    } else if (this.level == '1') {
-                        codes[2] = '0';
-                    }
-                } else if (codes[0] === '810000' || codes[0] === '710000') {
-                    if(this.level == '2') {
-                        codes[3] = '0';
-                    }
-                }
-                if (labels[0] === '澳门') {
-                    if(this.level == '2') {
-                        labels[2] = '';
-                        labels[3] = '';
-                    } else if (this.level == '1') {
-                        labels[2] = '';
-                    }
-                } else if (labels[0] === '台湾' || labels[0] === '香港') {
-                    if(this.level == '2') {
-                        labels[3] = '';
-                    }
-                }
 
                 if (this.type === 'code') {
                     res = [].concat(codes);
@@ -337,49 +309,55 @@
                         item['value'] = city.children[j].value;
                         item['panelIndex'] = city.children[j].panelIndex;
                         // item['children'] = this.iterate(this.data[city.children[j].value], 2);
-                        const areaNew = this.iterate(this.data[city.children[j].value], 2);
-                        if (areaNew.length) {
-                            item['children'] = areaNew;
-                        } else {
-                            item['children'] = [{
-                                label: item.label,
-                                value: item.value,
-                                panelIndex: 2
-                            }];
+
+                        if (this.data[city.children[j].value] !== undefined) {
+                            const areaNew = this.iterate(this.data[city.children[j].value], 2);
+                            if (areaNew.length) {
+                                item['children'] = areaNew;
+                            } else {
+                                item['children'] = [{
+                                    label: item.label,
+                                    value: item.value,
+                                    panelIndex: 2
+                                }];
+                            }
+                            city.children[j] = item;
                         }
-                        city.children[j] = item
                     }
                     temp.push(city);
                 }
                 return temp;
             },
-            iterateStreet() {
+            iterateStreet () {
                 const temp = [];
                 const areaNow = this.iterateAreas();
                 for (let i = 0, c = areaNow.length; i < c; i++) {
                     const areaNext = areaNow[i];
                     for (let j = 0, l = areaNext.children.length; j < l; j++) {
                         const areaNew = areaNext.children[j];
-                        for(let k = 0, m = areaNew.children.length; k < m; k++) {
-                            const areaLast = areaNew.children[k];
-                            const streetNew = this.iterate(this.data[areaLast.value], 3);
-                            const item = {};
-                            item['label'] = areaLast.label;
-                            item['value'] = areaLast.value;
-                            item['panelIndex'] = areaLast.panelIndex;
-                            // item['children'] = this.iterate(this.data[areaLast.value], 3);
-                            if (streetNew.length) {
-                                item['children'] = streetNew;
-                            } else {
-                                item['children'] = [{
-                                    label: item.label,
-                                    value: item.value,
-                                    panelIndex: 3
-                                }];
+                        if (areaNew.children) {
+                            for (let k = 0, m = areaNew.children.length; k < m; k++) {
+                                const areaLast = areaNew.children[k];
+                                const streetNew = this.iterate(this.data[areaLast.value], 3);
+                                const item = {};
+                                item['label'] = areaLast.label;
+                                item['value'] = areaLast.value;
+                                item['panelIndex'] = areaLast.panelIndex;
+                                // item['children'] = this.iterate(this.data[areaLast.value], 3);
+                                if (this.data[areaLast.value] !== undefined) {
+                                    if (streetNew.length) {
+                                        item['children'] = streetNew;
+                                    } else {
+                                        item['children'] = [{
+                                            label: item.label,
+                                            value: item.value,
+                                            panelIndex: 3
+                                        }];
+                                    }
+                                }
+                                areaNew.children[k] = item;
                             }
-                            areaNew.children[k] = item
                         }
-
                     }
                     temp.push(areaNext);
                 }

@@ -45,7 +45,7 @@
     "area-data": ">=5.0.6"
   },
   "devDependencies": {
-    "area-data-vue": "^1.0.6",
+    "area-data-vue": "^1.0.8",
     "autoprefixer": "^7.1.1",
     "babel-core": "^6.25.0",
     "babel-eslint": "^7.2.3",
