@@ -30,8 +30,10 @@ Vue.use(AreaLinkageVue)
 <area-cascader v-model="selected2" :data="$pcaa" :level="2"></area-cascader> // 省市区街道
 
 ```
-更多演示访问 [这里](https://liangzibo.github.io/area-linkage-vue/).
+更多演示访问 [这里 https://liangzibo.github.io/area-vue-linkage/ ](https://liangzibo.github.io/area-vue-linkage/).
 
+这是老版本 
+[https://github.com/liangzibo/area-linkage-vue](https://github.com/liangzibo/area-linkage-vue)
 
 ## 属性
 ### area-select 组件
